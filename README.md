@@ -214,7 +214,7 @@ Input (28×28×1)
 | Learning Rate | 0.001 | 0.001 |
 | Loss Function | Categorical Crossentropy | Categorical Crossentropy |
 | Batch Size | 128 | 128 |
-| Epochs | 15 | 20 |
+| Epochs | 30 | 40 |
 | Validation Split | 20% | 20% |
 
 ## 📊 Results
