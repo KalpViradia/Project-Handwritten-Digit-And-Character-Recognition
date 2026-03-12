@@ -14,9 +14,10 @@ interface CharacterPrediction {
 interface CharacterPredictionDisplayProps {
     prediction: CharacterPrediction | null;
     isLoading: boolean;
+    onVisualize?: () => void;
 }
 
-export default function CharacterPredictionDisplay({ prediction, isLoading }: CharacterPredictionDisplayProps) {
+export default function CharacterPredictionDisplay({ prediction, isLoading, onVisualize }: CharacterPredictionDisplayProps) {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-64">
@@ -141,6 +142,15 @@ export default function CharacterPredictionDisplay({ prediction, isLoading }: Ch
                     </div>
                 ))}
             </div>
+
+            {/* Visualize Button */}
+            {onVisualize && (
+                <div className="flex justify-center pt-2">
+                    <button className="btn-visualize" onClick={onVisualize}>
+                        🎥 Visualize How It Works
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

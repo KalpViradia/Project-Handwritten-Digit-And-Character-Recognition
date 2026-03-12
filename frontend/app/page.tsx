@@ -1,9 +1,17 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import DrawingCanvas from "./components/DrawingCanvas";
 import FileUpload from "./components/FileUpload";
 import PredictionDisplay from "./components/PredictionDisplay";
+import ApiStatusBanner from "./components/ApiStatusBanner";
+
+// Lazy-load the visualizer — only loaded when modal opens
+const ForwardPassVisualizer = dynamic(
+  () => import("./components/ForwardPassVisualizer"),
+  { ssr: false }
+);
 
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -12,6 +20,7 @@ interface PredictionResult {
   predicted_digit: number;
   confidence: number;
   probabilities: number[];
+  image_grid?: number[][];
 }
 
 export default function Home() {
@@ -19,7 +28,18 @@ export default function Home() {
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [apiReady, setApiReady] = useState(false);
+  const [showVisualizer, setShowVisualizer] = useState(false);
   const canvasRef = useRef<{ getImageData: () => string; clearCanvas: () => void } | null>(null);
+
+  // Wake up the Render API on page load
+  const warmUpApi = useCallback(() => {
+    fetch(`${API_BASE_URL}/health`).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    warmUpApi();
+  }, [warmUpApi]);
 
   const handlePredict = async (imageData: string) => {
     setIsLoading(true);
@@ -92,8 +112,14 @@ export default function Home() {
     setError(null);
   };
 
+  // Digit labels 0-9
+  const digitLabels = Array.from({ length: 10 }, (_, i) => String(i));
+
   return (
     <div className="min-h-screen flex flex-col">
+      {/* API Status Banner */}
+      <ApiStatusBanner onApiReady={() => setApiReady(true)} />
+
       {/* Header */}
       <header className="py-6 px-4">
         <div className="max-w-6xl mx-auto text-center">
@@ -146,12 +172,18 @@ export default function Home() {
                     <button
                       className="btn-primary"
                       onClick={handleCanvasSubmit}
-                      disabled={isLoading}
+                      disabled={isLoading || !apiReady}
+                      title={!apiReady ? "Waiting for AI model to load…" : undefined}
                     >
                       {isLoading ? (
                         <span className="flex items-center gap-2">
                           <span className="spinner w-5 h-5"></span>
                           Processing...
+                        </span>
+                      ) : !apiReady ? (
+                        <span className="flex items-center gap-2">
+                          <span className="spinner w-4 h-4 !border-2"></span>
+                          Loading Model…
                         </span>
                       ) : (
                         "Predict"
@@ -193,6 +225,7 @@ export default function Home() {
               <PredictionDisplay
                 prediction={prediction}
                 isLoading={isLoading}
+                onVisualize={prediction ? () => setShowVisualizer(true) : undefined}
               />
             </div>
           </div>
@@ -225,6 +258,18 @@ export default function Home() {
       <footer className="py-4 text-center text-gray-500 text-sm">
         <p>Built with ❤️ using TensorFlow, FastAPI & Next.js</p>
       </footer>
+
+      {/* Forward Pass Visualizer Modal */}
+      {showVisualizer && prediction && (
+        <ForwardPassVisualizer
+          probabilities={prediction.probabilities}
+          predictedIndex={prediction.predicted_digit}
+          labels={digitLabels}
+          mode="digit"
+          imageGrid={prediction.image_grid}
+          onClose={() => setShowVisualizer(false)}
+        />
+      )}
     </div>
   );
 }

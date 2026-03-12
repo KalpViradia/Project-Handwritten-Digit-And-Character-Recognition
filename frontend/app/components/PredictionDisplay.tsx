@@ -9,9 +9,10 @@ interface PredictionResult {
 interface PredictionDisplayProps {
     prediction: PredictionResult | null;
     isLoading: boolean;
+    onVisualize?: () => void;
 }
 
-export default function PredictionDisplay({ prediction, isLoading }: PredictionDisplayProps) {
+export default function PredictionDisplay({ prediction, isLoading, onVisualize }: PredictionDisplayProps) {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-64">
@@ -126,6 +127,15 @@ export default function PredictionDisplay({ prediction, isLoading }: PredictionD
                         </div>
                     ))}
             </div>
+
+            {/* Visualize Button */}
+            {onVisualize && (
+                <div className="flex justify-center pt-2">
+                    <button className="btn-visualize" onClick={onVisualize}>
+                        🎥 Visualize How It Works
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

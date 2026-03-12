@@ -63,6 +63,7 @@ class DigitPredictionResponse(BaseModel):
     predicted_digit: int
     confidence: float
     probabilities: list[float]
+    image_grid: list[list[float]] | None = None
 
 
 class CharacterPredictionResponse(BaseModel):
@@ -71,6 +72,7 @@ class CharacterPredictionResponse(BaseModel):
     predicted_index: int
     confidence: float
     probabilities: list[float]
+    image_grid: list[list[float]] | None = None
 
 
 def load_models():
@@ -167,7 +169,8 @@ async def predict_digit(file: UploadFile = File(...)):
         return DigitPredictionResponse(
             predicted_digit=int(np.argmax(predictions[0])),
             confidence=float(np.max(predictions[0])),
-            probabilities=predictions[0].tolist()
+            probabilities=predictions[0].tolist(),
+            image_grid=processed_image[0].squeeze().tolist()
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
@@ -204,7 +207,8 @@ async def predict_digit_canvas(request: Base64ImageRequest):
             "all_predictions": [
                 {"digit": i, "probability": float(p)} 
                 for i, p in enumerate(predictions[0])
-            ]
+            ],
+            "image_grid": processed_image[0].squeeze().tolist()
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
@@ -232,7 +236,8 @@ async def predict_character(file: UploadFile = File(...)):
             predicted_character=CHAR_LABELS[predicted_idx],
             predicted_index=predicted_idx,
             confidence=float(np.max(predictions[0])),
-            probabilities=predictions[0].tolist()
+            probabilities=predictions[0].tolist(),
+            image_grid=processed_image[0].squeeze().tolist()
         )
 
     except Exception as e:
@@ -271,7 +276,8 @@ async def predict_character_canvas(request: Base64ImageRequest):
             "all_predictions": [
                 {"character": CHAR_LABELS[i], "probability": float(p)} 
                 for i, p in enumerate(predictions[0])
-            ]
+            ],
+            "image_grid": processed_image[0].squeeze().tolist()
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")

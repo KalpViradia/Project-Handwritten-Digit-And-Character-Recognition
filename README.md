@@ -20,9 +20,9 @@ A complete Deep Learning project for recognizing handwritten digits (0-9) and up
 
 ## ✨ Features
 
-- **Dual Recognition**: Recognize both handwritten digits (0-9) and uppercase letters (A-Z)
-- **CNN Models**: Deep Convolutional Neural Networks achieving 99%+ accuracy
-- **Baseline Comparison**: Fully-connected ANN for performance comparison
+- **Neural Path Visualization**: Cinematic 10-second staged animation of the forward pass
+- **Explainable AI UI**: Visualize connections, weights, and signal pulses in real-time
+- **Staged Inference Flow**: Phased animation: Input → Connections → Pulses → Decision Path
 - **Interactive Canvas**: Draw digits/characters directly in the browser
 - **Image Upload**: Upload photos of handwritten digits or characters
 - **Real-time Predictions**: Instant recognition with confidence scores
@@ -60,6 +60,7 @@ digit-recognizer/
 │   │   │   ├── DrawingCanvas.tsx
 │   │   │   ├── FileUpload.tsx
 │   │   │   ├── PredictionDisplay.tsx
+│   │   │   ├── ForwardPassVisualizer.tsx   # Cinematic Neural Network Visualizer
 │   │   │   └── CharacterPredictionDisplay.tsx
 │   │   ├── characters/
 │   │   │   └── page.tsx            # Character recognition page
@@ -178,6 +179,18 @@ The frontend will be available at `http://localhost:3000`
 
 - **Digit Recognition**: `http://localhost:3000/`
 - **Character Recognition**: `http://localhost:3000/characters`
+
+## 🔍 Neural Path Visualization
+
+The project includes custom **Explainable AI (XAI)** tools to visualize how the CNN arrives at its decision. 
+
+- **10s Cinematic Sequence**: A staged 7-phase JOURNEY explaining the forward pass.
+- **Dynamic Connection Growth**: Watch the neural connections form layer-by-layer.
+- **Activation Pulses**: High-speed energy pulses represent the signal propagating through the network.
+- **Path Highlighting**: The final 2 seconds dim all "noise" and highlight the winning decision path.
+- **Anchored Results**: Predicted output neurons are connected to their labels via dynamic dotted lines.
+
+*(To view: Click "VIEW ANALYSIS" after any prediction)*
 
 ## 🧠 Model Architecture
 

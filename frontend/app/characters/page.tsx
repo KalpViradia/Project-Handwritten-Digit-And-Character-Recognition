@@ -1,17 +1,29 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import DrawingCanvas from "../components/DrawingCanvas";
 import FileUpload from "../components/FileUpload";
 import CharacterPredictionDisplay from "../components/CharacterPredictionDisplay";
+import ApiStatusBanner from "../components/ApiStatusBanner";
+
+// Lazy-load the visualizer — only loaded when modal opens
+const ForwardPassVisualizer = dynamic(
+  () => import("../components/ForwardPassVisualizer"),
+  { ssr: false }
+);
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+// Character labels A-Z
+const CHAR_LABELS = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
 
 interface CharacterPrediction {
     predicted_character: string;
     predicted_index: number;
     confidence: number;
     probabilities: number[];
+    image_grid?: number[][];
     warning?: string | null;
 }
 
@@ -20,7 +32,18 @@ export default function CharactersPage() {
     const [prediction, setPrediction] = useState<CharacterPrediction | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [apiReady, setApiReady] = useState(false);
+    const [showVisualizer, setShowVisualizer] = useState(false);
     const canvasRef = useRef<{ getImageData: () => string; clearCanvas: () => void } | null>(null);
+
+    // Wake up the Render API on page load
+    const warmUpApi = useCallback(() => {
+        fetch(`${API_BASE_URL}/health`).catch(() => {});
+    }, []);
+
+    useEffect(() => {
+        warmUpApi();
+    }, [warmUpApi]);
 
     const handlePredict = async (imageData: string) => {
         setIsLoading(true);
@@ -91,6 +114,9 @@ export default function CharactersPage() {
 
     return (
         <div className="min-h-screen flex flex-col">
+            {/* API Status Banner */}
+            <ApiStatusBanner onApiReady={() => setApiReady(true)} />
+
             {/* Header */}
             <header className="py-6 px-4">
                 <div className="max-w-6xl mx-auto text-center">
@@ -141,9 +167,22 @@ export default function CharactersPage() {
                                         <button
                                             className="btn-primary bg-gradient-to-r from-emerald-500 to-teal-500"
                                             onClick={handleCanvasSubmit}
-                                            disabled={isLoading}
+                                            disabled={isLoading || !apiReady}
+                                            title={!apiReady ? "Waiting for AI model to load…" : undefined}
                                         >
-                                            {isLoading ? "Processing..." : "Predict"}
+                                            {isLoading ? (
+                                                <span className="flex items-center gap-2">
+                                                    <span className="spinner w-4 h-4 !border-2"></span>
+                                                    Processing...
+                                                </span>
+                                            ) : !apiReady ? (
+                                                <span className="flex items-center gap-2">
+                                                    <span className="spinner w-4 h-4 !border-2"></span>
+                                                    Loading Model…
+                                                </span>
+                                            ) : (
+                                                "Predict"
+                                            )}
                                         </button>
                                         <button
                                             className="btn-secondary"
@@ -180,6 +219,7 @@ export default function CharactersPage() {
                             <CharacterPredictionDisplay
                                 prediction={prediction}
                                 isLoading={isLoading}
+                                onVisualize={prediction ? () => setShowVisualizer(true) : undefined}
                             />
                         </div>
                     </div>
@@ -212,6 +252,18 @@ export default function CharactersPage() {
             <footer className="py-4 text-center text-gray-500 text-sm">
                 <p>Built with ❤️ using TensorFlow, FastAPI & Next.js</p>
             </footer>
+
+            {/* Forward Pass Visualizer Modal */}
+            {showVisualizer && prediction && (
+                <ForwardPassVisualizer
+                    probabilities={prediction.probabilities}
+                    predictedIndex={prediction.predicted_index}
+                    labels={CHAR_LABELS}
+                    mode="character"
+                    imageGrid={prediction.image_grid}
+                    onClose={() => setShowVisualizer(false)}
+                />
+            )}
         </div>
     );
 }
