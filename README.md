@@ -2,6 +2,8 @@
 
 A complete Deep Learning project for recognizing handwritten digits (0-9) and uppercase letters (A-Z) using Convolutional Neural Networks trained on the MNIST and EMNIST datasets. Features a FastAPI backend and a modern Next.js frontend with canvas drawing capabilities.
 
+**[🚀 Live Demo](https://handwritten-digit-character-recogni.vercel.app)**
+
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![TensorFlow](https://img.shields.io/badge/TensorFlow-2.15+-orange.svg)
 ![Next.js](https://img.shields.io/badge/Next.js-16+-black.svg)
@@ -227,7 +229,7 @@ Input (28×28×1)
 | Learning Rate | 0.001 | 0.001 |
 | Loss Function | Categorical Crossentropy | Categorical Crossentropy |
 | Batch Size | 128 | 128 |
-| Epochs | 30 | 40 |
+| Epochs | 15 | 20 |
 | Validation Split | 20% | 20% |
 
 ## 📊 Results
